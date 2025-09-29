@@ -36,3 +36,11 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/.idea/.gitignore
+/.idea/dataSources.xml
+/.idea/encodings.xml
+/.idea/misc.xml
+/.idea/vcs.xml
+/src/main/resources/lombok-1.18.36.jar
+/dependency-reduced-pom.xml
+/lastIndexProcessed
