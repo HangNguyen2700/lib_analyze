@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:17
+    container_name: pg
+    ports:
+      - "9876:5432"            # host -> container (so clients use localhost:9876)
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lib_analyze_db}
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret123}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
