@@ -44,3 +44,5 @@ build/
 /src/main/resources/lombok-1.18.36.jar
 /dependency-reduced-pom.xml
 /lastIndexProcessed
+
+*.conf
