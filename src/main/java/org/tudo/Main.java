@@ -1,47 +1,55 @@
 package org.tudo;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
 import org.tudo.managers.LeafLibrariesPersistenceManager;
-import org.tudo.sse.MavenCentralAnalysis;
 import org.tudo.sse.model.ArtifactIdent;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
-        LeafLibrariesAnalysis leafLibrariesAnalysis = new LeafLibrariesAnalysis();
+        System.out.println("11111 Running LeafLibrariesAnalysis ...");
+        runMarinAnalysis();
+    }
+
+    private static void runMarinAnalysis() {
+        LeafLibrariesPersistenceManager manager = new LeafLibrariesPersistenceManager();
+        LeafLibrariesAnalysis leafLibrariesAnalysis = new LeafLibrariesAnalysis(manager);
+
+        String checkpoint = "lastIndexProcessed";
+        // We always drive MARIN with -st (slice size) + -ip/--name (resume)
+        final String[] marinArgs = new String[]{
+                "--multi", "8",
+                "--name", checkpoint,
+                "-ip", checkpoint
+        };
+
         try {
-            System.out.println("11111 Running LeafLibrariesAnalysis ...");
-            leafLibrariesAnalysis.runAnalysis(args);
-//            Set<ArtifactIdent> leafIds = leafLibrariesAnalysis.getLeafIds();
-//            System.out.println("### number of leaf libraries found: "  + leafIds.size());
-            Set<LeafLibrary> leafLibraries = leafLibrariesAnalysis.getLeafLibraries();
-            System.out.println("### number of leaf libraries found: "  + leafLibraries.size());
-            for (LeafLibrary lib : leafLibraries) {
-                System.out.println(lib.getGroupId() + ":" + lib.getArtifactId() + ":" + lib.getBaseVersion());
-            }
-            LeafLibrariesPersistenceManager manager = new LeafLibrariesPersistenceManager();
-            manager.saveLeafLibraries(leafLibraries);
-//            LeafLibrary first = leafLibraries.iterator().next();
-//            manager.saveLeafLibrary(first);
-
-//            System.out.println("22222 Running DependentsOfLeafsAnalysis ...");
-//            DependentLibrariesAnalysis dependentsAnalysis = new DependentLibrariesAnalysis(leafIds);
-//            dependentsAnalysis.runAnalysis(args);
-
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
+            leafLibrariesAnalysis.runAnalysis(marinArgs);
+        } catch (Exception e) {
+           manager.close();
+        } finally {
+            manager.close();
         }
+    }
 
+    // Reads the checkpoint file content (empty string if not present)
+    private static String readCheckpoint(String pathString) {
+        try {
+            Path path = Paths.get(pathString);
+            if (Files.exists(path)) return Files.readString(path);
+        } catch (IOException ignored) {
+        }
+        return "";
+    }
 
-
-//        if (args.length != 2) {
+    private static void runOPALAnalysis() {
+        //        if (args.length != 2) {
 //            System.err.println("Usage: LibsCallGraphBuilder <A.jar> <B.jar>");
 //            System.exit(1);
 //        }
@@ -60,4 +68,5 @@ public class Main {
 //        LibsManager libsManager = new LibsManager(aFile, bFile, overrideConfig);
 //        libsManager.analyze();
     }
+
 }

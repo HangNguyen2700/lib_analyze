@@ -1,5 +1,6 @@
 package org.tudo;
 
+import org.tudo.managers.LeafLibrariesPersistenceManager;
 import org.tudo.sse.MavenCentralAnalysis;
 import org.tudo.sse.model.Artifact;
 import org.tudo.sse.model.ArtifactIdent;
@@ -12,23 +13,27 @@ import java.util.*;
 
 
 public class LeafLibrariesAnalysis extends MavenCentralAnalysis {
-    private final Set<String> leafCoords;
-    private final Set<ArtifactIdent> leafIds;
-    private final Set<LeafLibrary> leafLibraries;
-    private int i;
+    private final LeafLibrariesPersistenceManager manager;
+    private int librariesCounter;
+    private int leafLibrariesCounter;
+//    private final Set<ArtifactIdent> leafIds;
+//    private final Set<LeafLibrary> leafLibraries;
 
-    public LeafLibrariesAnalysis() {
-//        super(false, true, false, false);
+    public LeafLibrariesAnalysis(LeafLibrariesPersistenceManager manager) {
         super();
         this.resolvePom = true;
-        this.leafCoords = new HashSet<>();
-        this.leafIds = new HashSet<>();
-        this.leafLibraries = new HashSet<>();
-        this.i = 0;
+        this.manager = manager;
+        this.librariesCounter = 0;
+        this.leafLibrariesCounter = 0;
+//        this.leafIds = new HashSet<>();
+//        this.leafLibraries = new HashSet<>();
     }
 
     @Override
     public void analyzeArtifact(Artifact artifact) {
+        librariesCounter++;
+        System.out.println("library: " + librariesCounter);
+
         if(artifact == null) return;
 
         ArtifactIdent id = artifact.getIdent();
@@ -53,26 +58,28 @@ public class LeafLibrariesAnalysis extends MavenCentralAnalysis {
             }
         }
         if (actualDependencies.isEmpty()) {
+            leafLibrariesCounter++;
+            System.out.println("leaf library: " + leafLibrariesCounter);
+            LeafLibrary leafLibrary = new LeafLibrary(id.getGroupID(), id.getArtifactID(), id.getVersion(), id.getMavenCentralJarUri().toString());
 //            leafIds.add(id);
-            LeafLibrary leafLibrary = new LeafLibrary(id.getGroupID(), id.getArtifactID(), id.getVersion());
-            leafLibraries.add(leafLibrary);
-
-//            String gav = id.getCoordinates();
-//            leafCoords.add(gav);
-//            i++;
-//            System.out.println(i + " : " + gav);
+//            leafLibraries.add(leafLibrary);
+            manager.saveLeafLibrary(leafLibrary);
         }
     }
 
-    public Set<String> getLeafCoords() {
-        return leafCoords;
+    public int getLibrariesCounterCounter() {
+        return librariesCounter;
     }
 
-    public Set<ArtifactIdent> getLeafIds() {
-        return leafIds;
+    public int getLeafLibrariesCounter() {
+        return leafLibrariesCounter;
     }
 
-    public Set<LeafLibrary> getLeafLibraries() {
-        return leafLibraries;
-    }
+//    public Set<ArtifactIdent> getLeafIds() {
+//        return leafIds;
+//    }
+//
+//    public Set<LeafLibrary> getLeafLibraries() {
+//        return leafLibraries;
+//    }
 }

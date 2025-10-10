@@ -2,6 +2,7 @@ package org.tudo;
 
 import jakarta.persistence.*;
 
+import java.net.URI;
 import java.util.Objects;
 
 @Entity
@@ -16,44 +17,27 @@ public class LeafLibrary {
     @Column(name="artifact_id")
     private String artifactId;
 
-    @Column(name="base_version")
-    private String baseVersion;
+    @Column(name="version")
+    private String version;
 
-    @Column(name="resolved_ts_version")
-    private String resolvedTimestampedVersion;
-
-    @Column(name="classifier") // null = no classifier
-    private String classifier;
-
-    @Column(name="link_to_jar")
-    private String linkToJar;
-
-//    @Column(name="packaging", nullable=false, length=50)
-//    private String packaging = "jar";
-
-
-//    @Column(name="is_snapshot", nullable=false)
-//    private boolean snapshot;
+    @Column(name="maven_central_jar_uri")
+    private String mavenCentralJarUri;
 
     public LeafLibrary() {
     }
 
-    public LeafLibrary(String groupId, String artifactId, String baseVersion) {
+    public LeafLibrary(String groupId, String artifactId, String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
-        this.baseVersion = baseVersion;
+        this.version = version;
     }
 
-    public LeafLibrary(Long id, String groupId, String artifactId, String baseVersion, String resolvedTimestampedVersion, String classifier, String linkToJar) {
-        this.id = id;
+    public LeafLibrary(String groupId, String artifactId, String version, String mavenCentralJarUri) {
         this.groupId = groupId;
         this.artifactId = artifactId;
-        this.baseVersion = baseVersion;
-        this.resolvedTimestampedVersion = resolvedTimestampedVersion;
-        this.classifier = classifier;
-        this.linkToJar = linkToJar;
+        this.version = version;
+        this.mavenCentralJarUri = mavenCentralJarUri;
     }
-
 
     public Long getId() {
         return id;
@@ -79,47 +63,31 @@ public class LeafLibrary {
         this.artifactId = artifactId;
     }
 
-    public String getBaseVersion() {
-        return baseVersion;
+    public String getVersion() {
+        return version;
     }
 
-    public void setBaseVersion(String baseVersion) {
-        this.baseVersion = baseVersion;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
-    public String getResolvedTimestampedVersion() {
-        return resolvedTimestampedVersion;
+    public String getMavenCentralJarUri() {
+        return mavenCentralJarUri;
     }
 
-    public void setResolvedTimestampedVersion(String resolvedTimestampedVersion) {
-        this.resolvedTimestampedVersion = resolvedTimestampedVersion;
-    }
-
-    public String getClassifier() {
-        return classifier;
-    }
-
-    public void setClassifier(String classifier) {
-        this.classifier = classifier;
-    }
-
-    public String getLinkToJar() {
-        return linkToJar;
-    }
-
-    public void setLinkToJar(String linkToJar) {
-        this.linkToJar = linkToJar;
+    public void setMavenCentralJarUri(String mavenCentralJarUri) {
+        this.mavenCentralJarUri = mavenCentralJarUri;
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof LeafLibrary)) return false;
         LeafLibrary that = (LeafLibrary) o;
-        return Objects.equals(getGroupId(), that.getGroupId()) && Objects.equals(getArtifactId(), that.getArtifactId()) && Objects.equals(getBaseVersion(), that.getBaseVersion()) && Objects.equals(getResolvedTimestampedVersion(), that.getResolvedTimestampedVersion()) && Objects.equals(getClassifier(), that.getClassifier()) && Objects.equals(getLinkToJar(), that.getLinkToJar());
+        return Objects.equals(getGroupId(), that.getGroupId()) && Objects.equals(getArtifactId(), that.getArtifactId()) && Objects.equals(getVersion(), that.getVersion()) && Objects.equals(getMavenCentralJarUri(), that.getMavenCentralJarUri());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getGroupId(), getArtifactId(), getBaseVersion(), getResolvedTimestampedVersion(), getClassifier(), getLinkToJar());
+        return Objects.hash(getGroupId(), getArtifactId(), getVersion(), getMavenCentralJarUri());
     }
 }
