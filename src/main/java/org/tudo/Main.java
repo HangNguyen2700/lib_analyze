@@ -32,7 +32,7 @@ public class Main {
         try {
             leafLibrariesAnalysis.runAnalysis(marinArgs);
         } catch (Exception e) {
-           manager.close();
+            e.printStackTrace();
         } finally {
             manager.close();
         }

@@ -6,21 +6,25 @@ import java.net.URI;
 import java.util.Objects;
 
 @Entity
-@Table(name = "leaf_libraries")
+@Table(name = "leaf_libraries",
+        uniqueConstraints =
+        @UniqueConstraint(columnNames = {"group_id", "artifact_id", "version", "maven_central_jar_uri"})
+)
 public class LeafLibrary {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="group_id")
+    @Column(name = "group_id")
     private String groupId;
 
-    @Column(name="artifact_id")
+    @Column(name = "artifact_id")
     private String artifactId;
 
-    @Column(name="version")
+    @Column(name = "version")
     private String version;
 
-    @Column(name="maven_central_jar_uri")
+    @Column(name = "maven_central_jar_uri")
     private String mavenCentralJarUri;
 
     public LeafLibrary() {

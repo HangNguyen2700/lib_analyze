@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 //import jakarta.transaction.Transaction;
 import org.hibernate.*;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.tudo.LeafLibrary;
 import org.tudo.utils.HibernateUtil;
 
@@ -40,7 +41,7 @@ public class LeafLibrariesPersistenceManager {
                 System.out.println("Transaction rollback successfully");
             } catch (Exception ignored) {
                 System.out.println("Error rolling back transaction");
-                throw new RuntimeException(ignored);
+                ignored.printStackTrace();
             }
         }
     }
@@ -55,13 +56,16 @@ public class LeafLibrariesPersistenceManager {
             transaction = session.beginTransaction();
             session.merge(leafLibrary);
             transaction.commit();
+        } catch (ConstraintViolationException dup) {
+            System.out.println("Duplicated leaf library found");
+            safeRollback(transaction);
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
                 System.out.println("Transaction rollback successfully");
             }
             System.out.println("Error saving leaf library ");
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
