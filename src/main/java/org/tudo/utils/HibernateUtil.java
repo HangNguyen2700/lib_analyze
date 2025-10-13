@@ -8,6 +8,9 @@ public class HibernateUtil {
     private static final SessionFactory sessionFactory = buildSessionFactory();
 
     private static SessionFactory buildSessionFactory() {
+        // Make sure properties are in place before Hibernate reads hibernate.cfg.xml
+        SystemPropertiesLoader.load();
+
         try {
             // Load the configuration and build the SessionFactory
             return new Configuration().configure().buildSessionFactory();

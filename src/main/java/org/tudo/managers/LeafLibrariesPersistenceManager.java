@@ -60,10 +60,7 @@ public class LeafLibrariesPersistenceManager {
             System.out.println("Duplicated leaf library found");
             safeRollback(transaction);
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-                System.out.println("Transaction rollback successfully");
-            }
+            safeRollback(transaction);
             System.out.println("Error saving leaf library ");
             e.printStackTrace();
         }

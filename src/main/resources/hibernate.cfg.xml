@@ -6,9 +6,9 @@
     <session-factory>
         <!-- JDBC Database connection settings -->
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
-        <property name="hibernate.connection.url">jdbc:postgresql://localhost:9876/appdb</property>
-        <property name="hibernate.connection.username">appuser</property>
-        <property name="hibernate.connection.password">secret123</property>
+        <property name="hibernate.connection.url">${DB_URL}</property>
+        <property name="hibernate.connection.username">${DB_USER}</property>
+        <property name="hibernate.connection.password">${DB_PASSWORD}</property>
 
         <!-- JDBC connection pool settings -->
 <!--        <property name="hibernate.c3p0.min_size">5</property>-->
