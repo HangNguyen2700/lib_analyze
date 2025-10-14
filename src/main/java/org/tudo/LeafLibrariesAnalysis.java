@@ -31,8 +31,8 @@ public class LeafLibrariesAnalysis extends MavenCentralAnalysis {
 
     @Override
     public void analyzeArtifact(Artifact artifact) {
-        librariesCounter++;
-        System.out.println("library: " + librariesCounter);
+//        librariesCounter++;
+//        System.out.println("library: " + librariesCounter);
 
         if(artifact == null) return;
 
@@ -63,7 +63,7 @@ public class LeafLibrariesAnalysis extends MavenCentralAnalysis {
             LeafLibrary leafLibrary = new LeafLibrary(id.getGroupID(), id.getArtifactID(), id.getVersion(), id.getMavenCentralJarUri().toString());
 //            leafIds.add(id);
 //            leafLibraries.add(leafLibrary);
-            manager.saveLeafLibrary(leafLibrary);
+            manager.save(leafLibrary);
         }
     }
 

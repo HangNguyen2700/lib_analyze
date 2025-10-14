@@ -12,27 +12,27 @@ import java.util.List;
 import java.util.Set;
 
 public class LeafLibrariesPersistenceManager {
-    private Session session;
+//    private Session session;
 
-    public LeafLibrariesPersistenceManager() {
-        session = HibernateUtil.getSessionFactory().openSession();
-        System.out.println("New session opened");
-        // Close cleanly on Ctrl+C / kill (best-effort)
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                LeafLibrariesPersistenceManager.this.close();
-                System.out.println("### Kill process: Session closed successfully");
-            } catch (Exception ignored) {
-                System.out.println("### Kill process: Error closing session");
-                throw new RuntimeException(ignored);
-            }
-        }));
-    }
+//    public LeafLibrariesPersistenceManager() {
+//        session = HibernateUtil.getSessionFactory().openSession();
+//        System.out.println("New session opened");
+//        // Close cleanly on Ctrl+C / kill (best-effort)
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            try {
+//                LeafLibrariesPersistenceManager.this.close();
+//                System.out.println("### Kill process: Session closed successfully");
+//            } catch (Exception ignored) {
+//                System.out.println("### Kill process: Error closing session");
+//                throw new RuntimeException(ignored);
+//            }
+//        }));
+//    }
 
-    public void close() {
-        if (this.session != null && this.session.isOpen()) this.session.close();
-        System.out.println("Session closed successfully");
-    }
+//    public void close() {
+//        if (this.session != null && this.session.isOpen()) this.session.close();
+//        System.out.println("Session closed successfully");
+//    }
 
     private static void safeRollback(Transaction transaction) {
         if (transaction != null && transaction.isActive()) {
@@ -50,21 +50,54 @@ public class LeafLibrariesPersistenceManager {
      * Insert (or update) right away.
      * Uses merge() for idempotency in case the row already exists (unique key on G:A:V recommended).
      */
-    public void saveLeafLibrary(LeafLibrary leafLibrary) {
-        Transaction transaction = null;
-        try {
-            transaction = session.beginTransaction();
-            session.merge(leafLibrary);
-            transaction.commit();
-        } catch (ConstraintViolationException dup) {
-            System.out.println("Duplicated leaf library found");
-            safeRollback(transaction);
-        } catch (Exception e) {
-            safeRollback(transaction);
-            System.out.println("Error saving leaf library ");
-            e.printStackTrace();
+//    public void saveLeafLibrary(LeafLibrary leafLibrary) {
+//        Transaction transaction = null;
+//        try {
+//            transaction = session.beginTransaction();
+//            session.merge(leafLibrary);
+//            transaction.commit();
+//        } catch (ConstraintViolationException dup) {
+//            System.out.println("Duplicated leaf library found");
+//            safeRollback(transaction);
+//        } catch (Exception e) {
+//            safeRollback(transaction);
+//            System.out.println("Error saving leaf library ");
+////            e.printStackTrace();
+//        }
+//    }
+
+    public void save(LeafLibrary leafLibrary) {
+        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            try {
+                session.merge(leafLibrary);
+                transaction.commit();
+            } catch (ConstraintViolationException dup) {
+                System.out.println("Duplicated leaf library found");
+                safeRollback(transaction);
+            } catch (Exception e) {
+                System.out.println("Error saving leaf library ");
+                safeRollback(transaction);
+//            e.printStackTrace();
+            }
         }
     }
+
+//
+//    public void save(LeafLibrary lib) {
+//        try (Session s = sf.openSession()) {
+//            Transaction tx = s.beginTransaction();
+//            try {
+//                s.persist(lib);
+//                tx.commit();
+//            } catch (ConstraintViolationException e) {
+//                tx.rollback(); // likely unique (G:A:V). Decide: ignore or update
+//            } catch (RuntimeException e) {
+//                tx.rollback();
+//                throw e;
+//            }
+//        }
+//    }
 
     public void saveLeafLibraries(Set<LeafLibrary> leafLibraries) {
         if (leafLibraries == null || leafLibraries.isEmpty()) return;
@@ -91,13 +124,13 @@ public class LeafLibrariesPersistenceManager {
         }
     }
 
-    public LeafLibrary getLeafLibraryById(Long id) {
-        return session.find(LeafLibrary.class, id);
-    }
+//    public LeafLibrary getLeafLibraryById(Long id) {
+//        return session.find(LeafLibrary.class, id);
+//    }
 
-    public List<LeafLibrary> getAllLeafLibraries() {
-        return session.createQuery("from LeafLibrary", LeafLibrary.class).list();
-    }
+//    public List<LeafLibrary> getAllLeafLibraries() {
+//        return session.createQuery("from LeafLibrary", LeafLibrary.class).list();
+//    }
 
 
 }

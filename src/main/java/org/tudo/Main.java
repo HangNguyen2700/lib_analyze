@@ -33,8 +33,8 @@ public class Main {
             leafLibrariesAnalysis.runAnalysis(marinArgs);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            manager.close();
+//        } finally {
+//            manager.close();
         }
     }
 
