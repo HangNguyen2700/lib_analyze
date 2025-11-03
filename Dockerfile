@@ -8,5 +8,6 @@ RUN cd /usr/miner && \
 FROM openjdk:17-alpine
 COPY --from=build /usr/miner/target/lib_analyze-1.0-SNAPSHOT.jar lib_analyze.jar
 COPY system.properties system.properties
+COPY lastIndexProcessed lastIndexProcessed
 WORKDIR ./
 CMD ["java", "-jar", "lib_analyze.jar", "start"]

@@ -39,6 +39,6 @@ public class SystemPropertiesLoader {
             }
 //        }
 
-        System.out.println("[boot] system.properties not found; proceeding without it.");
+//        System.out.println("[boot] system.properties not found; proceeding without it.");
     }
 }

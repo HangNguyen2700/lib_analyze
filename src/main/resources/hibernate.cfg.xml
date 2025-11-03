@@ -30,5 +30,6 @@
 
         <!-- Entities -->
         <mapping class="org.tudo.LeafLibrary"/>
+        <mapping class="org.tudo.Library"/>
     </session-factory>
 </hibernate-configuration>

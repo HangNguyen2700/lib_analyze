@@ -2,7 +2,6 @@ package org.tudo;
 
 import jakarta.persistence.*;
 
-import java.net.URI;
 import java.util.Objects;
 
 @Entity
@@ -93,5 +92,9 @@ public class LeafLibrary {
     @Override
     public int hashCode() {
         return Objects.hash(getGroupId(), getArtifactId(), getVersion(), getMavenCentralJarUri());
+    }
+
+    public String getCoordinate() {
+        return this.groupId + ":" + this.artifactId + ":" + this.version;
     }
 }

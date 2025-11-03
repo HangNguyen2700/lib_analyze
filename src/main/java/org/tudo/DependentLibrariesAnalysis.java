@@ -8,44 +8,29 @@ import org.tudo.sse.model.pom.PomInformation;
 import org.tudo.sse.model.pom.RawPomFeatures;
 import org.tudo.utils.PomUtils;
 
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class DependentLibrariesAnalysis extends MavenCentralAnalysis {
-    private final Set<ArtifactIdent> leafArtifactIds;
-    private final Map<ArtifactIdent, Set<ArtifactIdent>> mapDepentArtifactIds = new HashMap<>();
+    private final Set<LeafLibrary> leafLibraries;
+    private final Map<LeafLibrary, Set<ArtifactIdent>> librariesMap = new HashMap<>(); //Set<ArtifactIdent> prevents duplicates for ArtifactIdent
 
-//    private final Map<String, List<ArtifactIdent>> gaToLeafs = new HashMap<>();
-//    private final Map<ArtifactIdent, Set<ArtifactIdent>> dependents = new HashMap<>();
-
-    public DependentLibrariesAnalysis (Set<ArtifactIdent> leafArtifactIds) {
+    public DependentLibrariesAnalysis (Set<LeafLibrary> leafLibraries) {
         super();
         this.resolvePom = true;
         this.resolveJar = true; // keep jars handy for later OPAL runs
-        this.leafArtifactIds = new HashSet<>(leafArtifactIds);
-        if (!leafArtifactIds.isEmpty()) {
-            for (ArtifactIdent artifactIdent : leafArtifactIds){
-//                String ga = artifactIdent.getGroupID() + ":" + artifactIdent.getArtifactId();
-//                gaToLeafs.computeIfAbsent(ga, k -> new ArrayList<>()).add(artifactIdent);
-                mapDepentArtifactIds.computeIfAbsent(artifactIdent, k -> new HashSet<>());
+        this.leafLibraries = leafLibraries;
+        if (!leafLibraries.isEmpty()) {
+            for (LeafLibrary leafLibrary : leafLibraries){
+                librariesMap.computeIfAbsent(leafLibrary, k -> new HashSet<>());
             }
         }
     }
+
+    /*
+    *
+    * */
     @Override
     public void analyzeArtifact(Artifact artifact) {
-//        if (artifact == null) return;
-//
-//        PomInformation pomInfo = artifact.getPomInformation();
-//        if (pomInfo == null) return;
-//
-//        // Only consider library artifacts.
-//        RawPomFeatures raw = pomInfo.getRawPomFeatures();
-//        String packaging = PomUtils.trimString(raw.getPackaging());
-//        if (!"jar".equals(packaging) && !"bundle".equals(packaging)) return;
-//
-//        List<Dependency> deps = raw.getDependencies();
-//        if (deps == null || deps.isEmpty()) return;
-
         if(artifact == null) return;
 
         ArtifactIdent id = artifact.getIdent();
@@ -65,43 +50,53 @@ public class DependentLibrariesAnalysis extends MavenCentralAnalysis {
         List<Dependency> dependencies = pomInfo.getRawPomFeatures().getDependencies();
         if(dependencies == null || dependencies.isEmpty()) return;
 
-//        List<Dependency> actualDependencies = new ArrayList<>();
-        boolean containsKey = false;
-        boolean equal = false;
+        // for all dependencies of an artifact
         for (Dependency dependency : dependencies) {
-            containsKey = false;
-            equal = false;
             if (PomUtils.isActualDependency(dependency)) {
                 ArtifactIdent dependencyId = dependency.getIdent();
                 if(dependencyId == null) continue;
-                for (ArtifactIdent leafId : leafArtifactIds) {
-                    System.out.println("depedency gav: " + dependencyId.getCoordinates() + ", leaf gav: " + leafId.getCoordinates());
-                    if(leafId.getCoordinates().equals(dependencyId.getCoordinates())) {
-                        equal = true;
+
+                //check if depedency is one of (random found) leaf libraries
+                //if true --> add to map with the correspondent leaf library
+                for (LeafLibrary leafLibrary : leafLibraries) {
+                    System.out.println("depedency gav: " + dependencyId.getCoordinates() + ", leaf gav: " + leafLibrary.getCoordinate());
+                    if(leafLibrary.getCoordinate().equals(dependencyId.getCoordinates())) {
                         System.out.println("equal");
-                        break;
+                        librariesMap.get(leafLibrary).add(id);
                     }
-                }
-                containsKey = mapDepentArtifactIds.containsKey(dependencyId);
-                System.out.println("is map contains key: " + containsKey);
-                if((!equal && containsKey) || (equal && !containsKey)) {
-                    System.out.println("ACHTUNG!!!! equal: " + equal + ", containsKey: " + containsKey );
                 }
             }
         }
-//####
-//        for (Dependency d : deps) {
-//            if (!PomUtils.isMeaningfulDependency(d)) continue; // skip tests/BOMs/etc.
-//            String ga = d.getGroupId() + ":" + d.getArtifactId();
-//
-//            List<ArtifactIdent> targets = gaToLeafs.get(ga);
-//            if (targets == null) continue;
-//
-//            // Current artifact (B) depends on leaf A (by GA).
-//            for (ArtifactIdent a : targets) {
-//                dependents.computeIfAbsent(a, k -> new LinkedHashSet<>())
-//                        .add(artifact.getIdentifier());
-//            }
-//        }
     }
+
+    public Map<LeafLibrary, Set<ArtifactIdent>> getLibrariesMap() {
+        return librariesMap;
+    }
+
+    public static void printLibrariesMap(Map<LeafLibrary, Set<ArtifactIdent>> map) {
+        if (map == null || map.isEmpty()) {
+            System.out.println("LibrariesMap is empty");
+            return;
+        }
+        map.entrySet().stream()
+                // sort by library coordinates for stable, readable output
+//                .sorted(Comparator.comparing(e -> libCoords(e.getKey())))
+                .forEach(entry -> {
+                    LeafLibrary lib = entry.getKey();
+                    Set<ArtifactIdent> id = entry.getValue();
+                    System.out.println(lib.getCoordinate());
+
+                    if (id == null || id.isEmpty()) {
+                        System.out.println("  (no dependent libraries)");
+                    } else {
+                        // print each artifact’s coordinates, sorted
+                        id.stream()
+                                .map(artifactIdent -> artifactIdent.getCoordinates())
+//                                .sorted()
+                                .forEach(coordinate -> System.out.println("  - " + coordinate));
+                        System.out.println(id.size() + " dependent libraries");
+                    }
+                });
+    }
+
 }
