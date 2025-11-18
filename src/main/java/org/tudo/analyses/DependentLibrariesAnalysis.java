@@ -1,5 +1,6 @@
-package org.tudo;
+package org.tudo.analyses;
 
+import org.tudo.LeafLibrary;
 import org.tudo.sse.MavenCentralAnalysis;
 import org.tudo.sse.model.Artifact;
 import org.tudo.sse.model.ArtifactIdent;

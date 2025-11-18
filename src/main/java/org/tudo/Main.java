@@ -1,7 +1,10 @@
 package org.tudo;
 
-import org.tudo.managers.LeafLibrariesPersistenceManager;
-import org.tudo.managers.LibrariesPersistenceManager;
+import org.tudo.analyses.DependentLibrariesAnalysis;
+import org.tudo.analyses.LeafLibrariesAnalysis;
+import org.tudo.analyses.LibrariesAnalysis;
+import org.tudo.persistenceManagers.LeafLibrariesPersistenceManager;
+import org.tudo.persistenceManagers.LibrariesPersistenceManager;
 import org.tudo.sse.model.ArtifactIdent;
 
 
@@ -15,14 +18,15 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
+
 //        System.out.println("11111 Running LeafLibrariesAnalysis ...");
-//        runMarinAnalysis();
+//        runMarinAnalysis(); //done
 
-        System.out.println("22222 Running LibrariesAnalysis ...");
-        runMarinLibrariesAnalysis();
+//        System.out.println("22222 Running LibrariesAnalysis ...");
+//        runMarinLibrariesAnalysis(); //done
 
-//        System.out.println("33333 Running OPALAnalysis ...");
-//        runOPALAnalysis(args);
+        System.out.println("33333 Running OPALAnalysis ...");
+        runOPALAnalysis(args);
 
 
 
@@ -155,7 +159,7 @@ public class Main {
             System.err.println("MARIN analysis for dependent libraries terminated with exception: ");
             e.printStackTrace();
         } finally {
-            //finally: needs for testing locally, modify it when wanna let the whole analysis run
+            //finally: needs for testing locally, modify it when want to let the whole analysis run
             librariesMap = dependentLibrariesAnalysis.getLibrariesMap();
             DependentLibrariesAnalysis.printLibrariesMap(librariesMap);
         }

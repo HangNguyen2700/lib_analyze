@@ -1,6 +1,5 @@
-package org.tudo.managers;
+package org.tudo.persistenceManagers;
 
-import jakarta.persistence.*;
 //import jakarta.transaction.Transaction;
 import org.hibernate.*;
 

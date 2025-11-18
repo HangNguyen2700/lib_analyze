@@ -1,6 +1,7 @@
-package org.tudo;
+package org.tudo.analyses;
 
-import org.tudo.managers.LibrariesPersistenceManager;
+import org.tudo.Library;
+import org.tudo.persistenceManagers.LibrariesPersistenceManager;
 import org.tudo.sse.MavenCentralAnalysis;
 import org.tudo.sse.model.Artifact;
 import org.tudo.sse.model.ArtifactIdent;
@@ -9,7 +10,6 @@ import org.tudo.sse.model.pom.PomInformation;
 import org.tudo.sse.model.pom.RawPomFeatures;
 import org.tudo.utils.PomUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LibrariesAnalysis extends MavenCentralAnalysis {
