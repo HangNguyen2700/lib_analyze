@@ -1,5 +1,6 @@
 package org.tudo;
 
+import org.tudo.analyses.DependenceAnalysis;
 import org.tudo.analyses.DependentLibrariesAnalysis;
 import org.tudo.analyses.LeafLibrariesAnalysis;
 import org.tudo.analyses.LibrariesAnalysis;
@@ -105,6 +106,12 @@ public class Main {
      *
      * */
     private static void runOPALAnalysis(String[] args) {
+        DependenceAnalysis dependenceAnalysis = new DependenceAnalysis();
+        dependenceAnalysis.analyzeDependency();
+    }
+
+
+    private static void runOPALAnalysis2(String[] args) {
         if (args.length < 2) {
             System.err.println("runOPALAnalysis: arguments missing");
             System.exit(2);

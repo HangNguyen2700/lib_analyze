@@ -63,9 +63,47 @@ public class LibrariesPersistenceManager {
 //        }
 //    }
 
-    public List<Library> getLibrariesByDependency(String coordinates) {
+    public Library getLibraryByCoordinates(String coordinates) {
         if (coordinates == null || coordinates.isBlank()) {
-            System.out.println("getLibrariesByDependency: coordinates of dependency is null or blank");
+            System.out.println("getLibraryByCoordinates: coordinates of dependency is null or blank");
+            return null;
+        }
+        String[] splitted = coordinates.split(":");
+        if (splitted.length != 3) {
+            System.out.println("getLibraryByCoordinates: Invalid coordinates: " + coordinates +
+                    " (expected format: groupId:artifactId:version)");
+            return null;
+        }
+
+        try(Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            try {
+                Library library = session.createQuery(
+                                "select l from Library l " +
+                                        "where l.groupId = :groupId " +
+                                        "and l.artifactId = :artifactId " +
+                                        "and l.version = :version " +
+                                        "and l.isLeaf = true",
+                                Library.class)
+                        .setParameter("groupId", splitted[0])
+                        .setParameter("artifactId", splitted[1])
+                        .setParameter("version", splitted[2])
+                        .setReadOnly(true)
+                        .uniqueResult();
+                transaction.commit();
+                return library;
+            } catch (Exception e) {
+                System.out.println("getLibraryByCoordinates: Error finding library by coordinates: " + coordinates);
+                e.printStackTrace();
+                safeRollback(transaction);
+            }
+            return null;
+        }
+    }
+
+    public List<Library> getLibrariesByLeafCoordinates(String coordinates) {
+        if (coordinates == null || coordinates.isBlank()) {
+            System.out.println("getLibrariesByLeafCoordinates: coordinates of dependency is null or blank");
             return Collections.emptyList();
         }
 
@@ -85,7 +123,7 @@ public class LibrariesPersistenceManager {
                 transaction.commit();
                 return result;
             } catch (Exception e) {
-                System.out.println("Error finding libraries by dependency coordinates: " + coordinates);
+                System.out.println("getLibrariesByLeafCoordinates: Error finding libraries by leaf coordinates: " + coordinates);
                 e.printStackTrace();
                 safeRollback(transaction);
             }

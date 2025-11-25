@@ -21,34 +21,46 @@ public class MethodsManager {
         this.project = project;
     }
 
-    public boolean checkIfDecMethodInJar(DeclaredMethod decMethod, List<ObjectType> typesInJar) {
+    public boolean checkIfMethodInFile(DeclaredMethod method, List<ObjectType> objTypesInFile) {
 //        Iterable<Tuple2<ClassFile, URL>> projectClassFilesWSources = project.classFilesWithSources();
-//        List<ObjectType> typesInJar = this.sortClassFileToJar(projectClassFilesWSources, jarFile);
-        return typesInJar.contains(decMethod.declaringClassType());
+//        List<ObjectType> objTypesInFile = this.sortClassFileToJar(projectClassFilesWSources, jarFile);
+        return objTypesInFile.contains(method.declaringClassType());
     }
 
-    // collect all methods with body in jar
-    public List<DeclaredMethod> collectAllDecMethodsInJar(List<ObjectType> typesInJar, DeclaredMethods prjDecMethods) {
-        List<DeclaredMethod> decMethodInJar = new ArrayList<>();
+    /**
+     * Sorts declared methods in the whole project into their belonging library files.
+     *
+     * @param prjMethods
+     *  List of all declared methods in project.
+     * @param objTypesInFile
+     *  List of object types of a library file, used for identification if a declared method belongs to
+     *  an object type (as well as belongs to the library file, which contains that object type) or not.
+     */
+    public List<DeclaredMethod> sortMethodsByFile(DeclaredMethods prjMethods, List<ObjectType> objTypesInFile) {
+        List<DeclaredMethod> methodsInFile = new ArrayList<>();
+
+        // loop through all classFiles in project, using its type to check if classFile belongs the given file
         Iterator<ClassFile> classFileIt = project.allProjectClassFiles().iterator();
-        // loop through all classFiles in project, using its type to check if classFile belongs Jar
         while (classFileIt.hasNext()) {
             ClassFile classFile = classFileIt.next();
-            if (!typesInJar.contains(classFile.thisType())) continue;
-            // if classFile belongs Jar --> loop through all Methods in classFile, look for it in form of
-            // DeclaredMethod(using prjDeclaredMethods.apply(m), useful for the analysis) and then add to the list
+            if (!objTypesInFile.contains(classFile.thisType())) continue;
+
+            // if classFile belongs the given file, it means all methods in that class file belongs to the
+            // given file --> loop through all declaredMethods in classFile and then add to the list
             Iterator<Method> methodIt = classFile.methods().iterator();
             while (methodIt.hasNext()) {
                 Method m = methodIt.next();
+                // For every method that has a defined body m.body().isDefined(), the corresponding DeclaredMethod
+                // is looked up in the project-wide DeclaredMethods index and added to the result.
                 if (m.body().isDefined()) {
-                    decMethodInJar.add(prjDecMethods.apply(m)); // yields a DefinedMethod (a DeclaredMethod)
+                    methodsInFile.add(prjMethods.apply(m));
                 }
             }
         }
-        return decMethodInJar;
+        return methodsInFile;
     }
 
-    public List<DeclaredMethod> getUnusedMethodsInJar(List<DeclaredMethod> decMethodsInJar, CallGraph callGraph) {
+    public List<DeclaredMethod> getUnusedMethodsInFile(List<DeclaredMethod> decMethodsInJar, CallGraph callGraph) {
         List<DeclaredMethod> unused = new ArrayList<>();
         for(DeclaredMethod decMethod : decMethodsInJar) {
             Iterator<Tuple3<DeclaredMethod, Object, Object>> callers = callGraph.callersOf(decMethod).iterator();
@@ -57,20 +69,31 @@ public class MethodsManager {
         return unused;
     }
 
-    public List<DeclaredMethod> getUnusedMethodsInJarByJar(List<DeclaredMethod> decMethodsInJar, CallGraph callGraph, List<ObjectType> typesInCallerJar) {
+    /**
+     *
+     * @param callees
+     *  Declared Methods of the first library file to be checked if they are used or unused
+     *  by other library file.
+     * @param objTypesInCallerFile
+     * @param callGraph
+     * @return
+     */
+    public List<DeclaredMethod> getUnusedMethodsInFileByOtherFile(List<DeclaredMethod> callees, List<ObjectType> objTypesInCallerFile, CallGraph callGraph) {
         List<DeclaredMethod> unused = new ArrayList<>();
-        boolean calledByJar = false;
+        boolean calledByOtherFile = false;
 
-        for(DeclaredMethod decMethod : decMethodsInJar) {
-            Iterator<Tuple3<DeclaredMethod, Object, Object>> callers = callGraph.callersOf(decMethod).iterator();
-            calledByJar = false;
+        for(DeclaredMethod callee : callees) {
+            calledByOtherFile = false;
+            Iterator<Tuple3<DeclaredMethod, Object, Object>> callers = callGraph.callersOf(callee).iterator();
+            System.out.println("callee: " + callee.id() + callee.name());
             while (callers.hasNext()) {
                 Tuple3<DeclaredMethod, Object, Object> t = callers.next();
                 DeclaredMethod caller = t._1();
-                calledByJar = this.checkIfDecMethodInJar(caller, typesInCallerJar);
-                if(calledByJar) break;
+                calledByOtherFile = this.checkIfMethodInFile(caller, objTypesInCallerFile);
+                System.out.println(caller.id() + caller.name() + " " + calledByOtherFile);
+                if(calledByOtherFile) break;
             }
-            if(!calledByJar) unused.add(decMethod);
+            if(!calledByOtherFile) unused.add(callee);
         }
 
         return unused;
