@@ -39,7 +39,7 @@ public class LibraryPairManager {
         this.leafFile = leafFile;
         this.dependentFile = dependentFile;
         this.project = Project$.MODULE$.apply(
-                new File[]{leafFile, dependentFile},
+                new File[]{dependentFile, leafFile},
                 new File[]{},
                 GlobalLogContext$.MODULE$,
                 config
@@ -56,11 +56,13 @@ public class LibraryPairManager {
 
         List<ObjectType> objTypesInLeaf = this.sortObjTypesByFile(project.classFilesWithSources(), leafFile);
         List<ObjectType> objTypesInDependence = this.sortObjTypesByFile(project.classFilesWithSources(), dependentFile);
-        System.out.println("###### Count all object types in leaf: " + objTypesInLeaf.size());
-        System.out.println("###### Count all object types in dependence: " + objTypesInDependence.size());
+//        System.out.println("###### Count all object types in leaf: " + objTypesInLeaf.size());
+//        System.out.println("###### Count all object types in dependence: " + objTypesInDependence.size());
 
         List<DeclaredMethod> methodsInLeaf = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInLeaf);
-        System.out.println("###### Count all methods in leaf: " + methodsInLeaf.size());
+        System.out.println("Total leaf methods with body : " + methodsInLeaf.size());
+        List<DeclaredMethod> methodsInDependent = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInDependence);
+        System.out.println("Total dependent methods with body : " + methodsInDependent.size());
 //        System.out.println("###### List all methods in leaf: ");
 //        for (DeclaredMethod method : methodsInLeaf) {
 //            System.out.println(method.id() + method.name());
@@ -68,7 +70,7 @@ public class LibraryPairManager {
 //        List<DeclaredMethod> unusedMethodsInLeaf = methodsManager.getUnusedMethodsInFile(methodsInLeaf, callGraph);
 //        System.out.println("###### Count unused in A: " + unusedMethodsInLeaf.size());
         List<DeclaredMethod> unusedMethodsInLeafByDependence = methodsManager.getUnusedMethodsInFileByOtherFile(methodsInLeaf, objTypesInDependence, callGraph);
-        System.out.println("###### Count unused in leaf by dependent library: " + unusedMethodsInLeafByDependence.size());
+        System.out.println("Total unused in leaf by dependent library: " + unusedMethodsInLeafByDependence.size());
 
     }
 

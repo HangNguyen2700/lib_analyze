@@ -85,13 +85,17 @@ public class MethodsManager {
         for(DeclaredMethod callee : callees) {
             calledByOtherFile = false;
             Iterator<Tuple3<DeclaredMethod, Object, Object>> callers = callGraph.callersOf(callee).iterator();
-            System.out.println("callee: " + callee.id() + callee.name());
+//            System.out.println("callee: " + callee.id() + callee.name());
             while (callers.hasNext()) {
                 Tuple3<DeclaredMethod, Object, Object> t = callers.next();
                 DeclaredMethod caller = t._1();
                 calledByOtherFile = this.checkIfMethodInFile(caller, objTypesInCallerFile);
-                System.out.println(caller.id() + caller.name() + " " + calledByOtherFile);
-                if(calledByOtherFile) break;
+//                System.out.println(caller.id() + caller.name() + " " + calledByOtherFile);
+                if(calledByOtherFile) {
+                    //declaringClassType is the class where contains callee (or the class extends it via inheritance)
+                    System.out.println("caller " + caller.id() + caller.name() + " uses method callee " + callee.declaringClassType() + " " + " " + callee.id() + callee.name());
+                    break;
+                }
             }
             if(!calledByOtherFile) unused.add(callee);
         }

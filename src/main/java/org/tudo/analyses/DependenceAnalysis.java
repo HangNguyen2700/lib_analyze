@@ -4,6 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.io.FileUtils;
 import org.tudo.Library;
+import org.example.LibraryPairManager2;
 import org.tudo.managers.LibraryPairManager;
 import org.tudo.persistenceManagers.LibrariesPersistenceManager;
 

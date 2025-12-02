@@ -28,9 +28,6 @@ public class Main {
 
         System.out.println("33333 Running OPALAnalysis ...");
         runOPALAnalysis(args);
-
-
-
     }
 
     /*
