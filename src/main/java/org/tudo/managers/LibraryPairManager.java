@@ -54,10 +54,11 @@ public class LibraryPairManager {
         CallGraph callGraph = project.get(FTACallGraphKey$.MODULE$);
         DeclaredMethods prjDecMethods = project.get(DeclaredMethodsKey$.MODULE$);
 
+        System.out.println("leaf fileName: " + leafFile.getName());
+        System.out.println("dependentFile: " + dependentFile.getName());
+
         List<ObjectType> objTypesInLeaf = this.sortObjTypesByFile(project.classFilesWithSources(), leafFile);
         List<ObjectType> objTypesInDependence = this.sortObjTypesByFile(project.classFilesWithSources(), dependentFile);
-//        System.out.println("###### Count all object types in leaf: " + objTypesInLeaf.size());
-//        System.out.println("###### Count all object types in dependence: " + objTypesInDependence.size());
 
         List<DeclaredMethod> methodsInLeaf = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInLeaf);
         System.out.println("Total leaf methods with body : " + methodsInLeaf.size());
