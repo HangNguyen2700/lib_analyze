@@ -5,9 +5,13 @@ COPY ./pom.xml /usr/miner/pom.xml
 RUN cd /usr/miner && \
     mvn clean package -DskipTests
 
-FROM openjdk:17-alpine
+#FROM openjdk:17-alpine
+FROM eclipse-temurin:17-jdk-jammy
 COPY --from=build /usr/miner/target/lib_analyze-1.0-SNAPSHOT.jar lib_analyze.jar
 COPY system.properties system.properties
 COPY lastIndexProcessed lastIndexProcessed
+COPY src/main/resources/libraryFiles src/main/resources/libraryFiles
+COPY Report.log Report.log
 WORKDIR ./
 CMD ["java", "-jar", "lib_analyze.jar", "start"]
+#CMD ["java", "-Xmx:1g", "-jar", "lib_analyze.jar", "start"]

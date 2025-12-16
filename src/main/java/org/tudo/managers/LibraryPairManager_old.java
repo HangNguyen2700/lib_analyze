@@ -23,77 +23,34 @@ import java.util.List;
 /**
  * Loads 2 libraries into 1 project for OPAL static analysis.
  */
-public class LibraryPairManager {
-    private Project<URL> project;
-    private File leafFile;
-    private File dependentFile;
-    private CallGraph callGraph;
-    private DeclaredMethods prjDecMethods;
+@Deprecated
+public class LibraryPairManager_old {
+    private final Project<URL> project;
+    private final File leafFile;
+    private final File dependentFile;
+    private MethodsManager_old methodsManager;
 
-    private List<ObjectType> objTypesInLeaf;
-    private List<ObjectType> objTypesInDependence;
-    private List<DeclaredMethod> methodsInLeaf;
-    private List<DeclaredMethod> methodsInDependent;
-    private List<DeclaredMethod> unusedMethodsInLeafByDependence;
+//    public LibsManager(Project<URL> project, File aFile, File bFile) {
+//        this.project = project;
+//        this.aFile = aFile;
+//        this.bFile = bFile;
+//    }
 
-    private MethodsManager methodsManager;
-
-    public LibraryPairManager () {
-    }
-
-    public void resetProject(){
-        this.project = null;
-        this.leafFile = null;
-        this.dependentFile = null;
-        this.callGraph = null;
-        this.prjDecMethods = null;
-
-        this.objTypesInLeaf = null;
-        this.objTypesInDependence = null;
-        this.methodsInLeaf = null;
-        this.methodsInDependent = null;
-        this.unusedMethodsInLeafByDependence = null;
-
-        this.methodsManager = new MethodsManager();
-    }
-
-    /**
-     * inits project for OPAL static analysis of each leaf- & dependent-library.
-     */
-    public void initProject(File leafFile, File dependentFile, Config config) {
+    public LibraryPairManager_old(File leafFile, File dependentFile, Config config) {
         this.leafFile = leafFile;
         this.dependentFile = dependentFile;
         this.project = Project$.MODULE$.apply(
-                new File[]{this.dependentFile, this.leafFile},
+                new File[]{dependentFile, leafFile},
                 new File[]{},
                 GlobalLogContext$.MODULE$,
                 config
         );
-        this.callGraph = this.project.get(FTACallGraphKey$.MODULE$);
-        this.prjDecMethods = this.project.get(DeclaredMethodsKey$.MODULE$);
-
-        System.out.println("leaf fileName: " + this.leafFile.getName());
-        System.out.println("dependentFile: " + this.dependentFile.getName());
-
-        this.objTypesInLeaf = this.sortObjTypesByFile(project.classFilesWithSources(), this.leafFile);
-        this.objTypesInDependence = this.sortObjTypesByFile(project.classFilesWithSources(), this.dependentFile);
-
-        this.methodsInLeaf = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInLeaf, project);
-        System.out.println("-- Total leaf methods with body : " + methodsInLeaf.size());
-        this.methodsInDependent = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInDependence, project);
-        System.out.println("-- Total dependent methods with body : " + methodsInDependent.size());
-
-        this.unusedMethodsInLeafByDependence = methodsManager.getUnusedMethodsInFileByOtherFile(methodsInLeaf, objTypesInDependence, callGraph);
-        System.out.println("-- Total unused in leaf by dependent library: " + unusedMethodsInLeafByDependence.size());
-        if(methodsInLeaf.size() == unusedMethodsInLeafByDependence.size()) {
-            System.out.println("--> " + leafFile.getName() + " is bloated in " + dependentFile.getName());
-        }
+        this.methodsManager = new MethodsManager_old(project);
     }
 
     /**
      * Static analysis using OPAL for each leaf- & dependent-library.
      */
-    @Deprecated
     public void analyzeLibraryPair() {
         CallGraph callGraph = project.get(FTACallGraphKey$.MODULE$);
         DeclaredMethods prjDecMethods = project.get(DeclaredMethodsKey$.MODULE$);
@@ -104,9 +61,9 @@ public class LibraryPairManager {
         List<ObjectType> objTypesInLeaf = this.sortObjTypesByFile(project.classFilesWithSources(), leafFile);
         List<ObjectType> objTypesInDependence = this.sortObjTypesByFile(project.classFilesWithSources(), dependentFile);
 
-        List<DeclaredMethod> methodsInLeaf = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInLeaf, project);
+        List<DeclaredMethod> methodsInLeaf = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInLeaf);
         System.out.println("-- Total leaf methods with body : " + methodsInLeaf.size());
-        List<DeclaredMethod> methodsInDependent = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInDependence, project);
+        List<DeclaredMethod> methodsInDependent = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInDependence);
         System.out.println("-- Total dependent methods with body : " + methodsInDependent.size());
 //        System.out.println("###### List all methods in leaf: ");
 //        for (DeclaredMethod method : methodsInLeaf) {
@@ -137,13 +94,10 @@ public class LibraryPairManager {
      */
     public List<ObjectType> sortObjTypesByFile(Iterable<Tuple2<ClassFile, URL>> projectClassFilesWSources, File file) {
         List<ObjectType> typesInFile = new ArrayList<>();
-        ClassFile classFile;
-        URL src;
-        String srcStr;
         for (Tuple2<ClassFile, URL> t : CollectionConverters.asJava(projectClassFilesWSources)) {
-            classFile = t._1();
-            src = t._2();
-            srcStr = src.toString();
+            ClassFile classFile = t._1();
+            URL src = t._2();
+            String srcStr = src.toString();
 //            System.out.println("source: " + srcStr);
 //            System.out.println("jarFile name: " + jarFile.getName() + ", type: " + classFile.thisType().toString());
             if (srcStr.contains(file.getName())) typesInFile.add(classFile.thisType());

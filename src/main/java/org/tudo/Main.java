@@ -16,6 +16,11 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
+import static org.example.HeapInfo.printHeapStats;
 
 public class Main {
     public static void main(String[] args) {
@@ -103,8 +108,25 @@ public class Main {
      *
      * */
     private static void runOPALAnalysis(String[] args) {
+//        printHeapStats();
         DependenceAnalysis dependenceAnalysis = new DependenceAnalysis();
-        dependenceAnalysis.analyzeDependency();
+        Logger logger = Logger.getLogger("Report");
+        FileHandler fh;
+
+        try {
+            fh = new FileHandler("Report.log");
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+
+            dependenceAnalysis.analyzeRandomLeafs();
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -167,27 +189,6 @@ public class Main {
             librariesMap = dependentLibrariesAnalysis.getLibrariesMap();
             DependentLibrariesAnalysis.printLibrariesMap(librariesMap);
         }
-
-
-        //        if (args.length != 2) {
-//            System.err.println("Usage: LibsCallGraphBuilder <A.jar> <B.jar>");
-//            System.exit(1);
-//        }
-//        File aFile = new File(args[0]);
-//        File bFile = new File(args[1]);
-
-//
-//        // 1) Build a sane config for "treat as libraries"
-//        String cfg = ""
-//                + "org.opalj.br.analyses.cg { \n"
-//                + "  ClosedPackagesKey { analysis = org.opalj.br.analyses.cg.AllPackagesClosed }\n"
-//                + "  InitialEntryPointsKey { analysis = org.opalj.br.analyses.cg.LibraryEntryPointsFinder }\n"
-//                + "}\n";
-//
-//        Config overrideConfig = ConfigFactory.parseString(cfg).withFallback(ConfigFactory.load());
-//
-//        LibsManager libsManager = new LibsManager(aFile, bFile, overrideConfig);
-//        libsManager.analyze();
     }
 
     //Snapshot helper (thread-safe copy of the map for printing)

@@ -15,10 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MethodsManager {
-    private final Project<URL> project;
 
-    public MethodsManager(Project<URL> project) {
-        this.project = project;
+    public MethodsManager() {
     }
 
     public boolean checkIfMethodInFile(DeclaredMethod method, List<ObjectType> objTypesInFile) {
@@ -36,24 +34,27 @@ public class MethodsManager {
      *  List of object types of a library file, used for identification if a declared method belongs to
      *  an object type (as well as belongs to the library file, which contains that object type) or not.
      */
-    public List<DeclaredMethod> sortMethodsByFile(DeclaredMethods prjMethods, List<ObjectType> objTypesInFile) {
+    public List<DeclaredMethod> sortMethodsByFile(DeclaredMethods prjMethods, List<ObjectType> objTypesInFile, Project<URL> project) {
         List<DeclaredMethod> methodsInFile = new ArrayList<>();
+        ClassFile classFile;
+        Iterator<Method> methodIt;
+        Method method;
 
         // loop through all classFiles in project, using its type to check if classFile belongs the given file
         Iterator<ClassFile> classFileIt = project.allProjectClassFiles().iterator();
         while (classFileIt.hasNext()) {
-            ClassFile classFile = classFileIt.next();
+            classFile = classFileIt.next();
             if (!objTypesInFile.contains(classFile.thisType())) continue;
 
             // if classFile belongs the given file, it means all methods in that class file belongs to the
             // given file --> loop through all declaredMethods in classFile and then add to the list
-            Iterator<Method> methodIt = classFile.methods().iterator();
+            methodIt = classFile.methods().iterator();
             while (methodIt.hasNext()) {
-                Method m = methodIt.next();
+                method = methodIt.next();
                 // For every method that has a defined body m.body().isDefined(), the corresponding DeclaredMethod
                 // is looked up in the project-wide DeclaredMethods index and added to the result.
-                if (m.body().isDefined()) {
-                    methodsInFile.add(prjMethods.apply(m));
+                if (method.body().isDefined()) {
+                    methodsInFile.add(prjMethods.apply(method));
                 }
             }
         }
@@ -62,8 +63,10 @@ public class MethodsManager {
 
     public List<DeclaredMethod> getUnusedMethodsInFile(List<DeclaredMethod> decMethodsInJar, CallGraph callGraph) {
         List<DeclaredMethod> unused = new ArrayList<>();
+        Iterator<Tuple3<DeclaredMethod, Object, Object>> callers;
+
         for(DeclaredMethod decMethod : decMethodsInJar) {
-            Iterator<Tuple3<DeclaredMethod, Object, Object>> callers = callGraph.callersOf(decMethod).iterator();
+            callers = callGraph.callersOf(decMethod).iterator();
             if(callers.isEmpty()) unused.add(decMethod);
         }
         return unused;
@@ -81,20 +84,25 @@ public class MethodsManager {
     public List<DeclaredMethod> getUnusedMethodsInFileByOtherFile(List<DeclaredMethod> callees, List<ObjectType> objTypesInCallerFile, CallGraph callGraph) {
         List<DeclaredMethod> unused = new ArrayList<>();
         boolean calledByOtherFile = false;
+        Iterator<Tuple3<DeclaredMethod, Object, Object>> callers;
+        Tuple3<DeclaredMethod, Object, Object> tuple;
+        DeclaredMethod caller;
+
+        System.out.println("callgraph's edges: " + callGraph.numEdges());
 
         for(DeclaredMethod callee : callees) {
             calledByOtherFile = false;
-            Iterator<Tuple3<DeclaredMethod, Object, Object>> callers = callGraph.callersOf(callee).iterator();
-            System.out.println("callee: " + callee.id() + callee.name());
+            callers = callGraph.callersOf(callee).iterator();
+//            System.out.println("callee: " + callee.id() + callee.name());
             while (callers.hasNext()) {
-                Tuple3<DeclaredMethod, Object, Object> t = callers.next();
-                DeclaredMethod caller = t._1();
+                tuple = callers.next();
+                caller = tuple._1();
                 //Here: true when caller is located in DependentFile, false otherwise (--> in LeafFile)
                 calledByOtherFile = this.checkIfMethodInFile(caller, objTypesInCallerFile);
-                System.out.println("--> " + caller.id() + caller.name() + " callee is called by caller: " + calledByOtherFile);
+//                System.out.println("--> " + caller.id() + caller.name() + " callee is called by caller: " + calledByOtherFile);
                 if(calledByOtherFile) {
                     //declaringClassType is the class where contains callee (or the class extends it via inheritance)
-                    System.out.println("caller " + caller.id() + caller.name() + " uses method callee " + callee.declaringClassType() + " " + " " + callee.id() + callee.name());
+//                    System.out.println("caller " + caller.id() + caller.name() + " uses method callee " + callee.declaringClassType() + " " + " " + callee.id() + callee.name());
                     break;
                 }
             }

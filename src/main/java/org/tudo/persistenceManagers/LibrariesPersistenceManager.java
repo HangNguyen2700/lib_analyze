@@ -19,7 +19,7 @@ public class LibrariesPersistenceManager {
                 transaction.rollback();
                 System.out.println("Transaction rollback successfully");
             } catch (Exception ignored) {
-                System.out.println("Error rolling back transaction");
+                System.err.println("Error rolling back transaction");
                 ignored.printStackTrace();
             }
         }
@@ -35,7 +35,7 @@ public class LibrariesPersistenceManager {
                 System.out.println("Duplicated library found");
                 safeRollback(transaction);
             } catch (Exception e) {
-                System.out.println("Error saving library ");
+                System.err.println("Error saving library ");
                 safeRollback(transaction);
                 e.printStackTrace();
             }
@@ -70,7 +70,7 @@ public class LibrariesPersistenceManager {
         }
         String[] splitted = coordinates.split(":");
         if (splitted.length != 3) {
-            System.out.println("getLibraryByCoordinates: Invalid coordinates: " + coordinates +
+            System.err.println("getLibraryByCoordinates: Invalid coordinates: " + coordinates +
                     " (expected format: groupId:artifactId:version)");
             return null;
         }
@@ -93,7 +93,7 @@ public class LibrariesPersistenceManager {
                 transaction.commit();
                 return library;
             } catch (Exception e) {
-                System.out.println("getLibraryByCoordinates: Error finding library by coordinates: " + coordinates);
+                System.err.println("getLibraryByCoordinates: Error finding library by coordinates: " + coordinates);
                 e.printStackTrace();
                 safeRollback(transaction);
             }
@@ -101,6 +101,10 @@ public class LibrariesPersistenceManager {
         }
     }
 
+    /**
+     * gets alls libraries that depends on the given leaf library by leaf coordinates
+     * @param coordinates
+     */
     public List<Library> getLibrariesByLeafCoordinates(String coordinates) {
         if (coordinates == null || coordinates.isBlank()) {
             System.out.println("getLibrariesByLeafCoordinates: coordinates of dependency is null or blank");
@@ -123,11 +127,38 @@ public class LibrariesPersistenceManager {
                 transaction.commit();
                 return result;
             } catch (Exception e) {
-                System.out.println("getLibrariesByLeafCoordinates: Error finding libraries by leaf coordinates: " + coordinates);
+                System.err.println("getLibrariesByLeafCoordinates: Error finding libraries by leaf coordinates: " + coordinates);
                 e.printStackTrace();
                 safeRollback(transaction);
             }
             return Collections.emptyList();
+        }
+    }
+
+    public Set<Library> getRandom(int n) {
+        if (n <= 0) {
+            System.out.println("getRandom: Number of libraries to be fetched must be a positive integer");
+            return Collections.emptySet();
+        }
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            try {
+                List<Library> result = session
+                        .createQuery(
+                                "select l from Library l order by function('random')",
+                                Library.class)
+                        .setMaxResults(n)
+                        .setReadOnly(true) // hint: read-only for performance
+                        .list();
+                transaction.commit();
+                return new HashSet<>(result);
+            } catch (Exception e) {
+                System.err.println("getRandom: Error getting random libraries ");
+                e.printStackTrace();
+                safeRollback(transaction);
+            }
+            return Collections.emptySet();
         }
     }
 }

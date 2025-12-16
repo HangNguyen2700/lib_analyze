@@ -38,7 +38,7 @@ public class LibraryPairManager2 {
                 GlobalLogContext$.MODULE$,
                 config
         );
-        this.methodsManager = new MethodsManager(project);
+//        this.methodsManager = new MethodsManager(project);
     }
 
     /**
