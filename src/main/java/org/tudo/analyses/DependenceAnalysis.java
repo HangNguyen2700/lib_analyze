@@ -30,31 +30,36 @@ public class DependenceAnalysis {
         String leafCoordinates = "javax.servlet:servlet-api:2.2";
 //        String leafCoordinates = "springframework:spring-core:1.1";
         Library leafLibrary = librariesPersistenceManager.getLibraryByCoordinates(leafCoordinates);
-        if(leafLibrary == null){
-            System.err.println("analyzeDependency: leaf " + leafCoordinates + " not found" );
+        if (leafLibrary == null) {
+            System.err.println("analyzeDependency: leaf " + leafCoordinates + " not found");
         }
         File leafFile = downloadJar(leafLibrary.getMavenCentralJarUri());
-        analyzeLeaf(leafLibrary, leafFile);
-        this.deleteJar(leafFile);
+        if (leafFile != null) {
+            analyzeLeaf(leafLibrary, leafFile);
+            this.deleteJar(leafFile);
+        }
     }
 
     public void analyzeRandomLeafs() {
         Set<Library> leafLibraries = librariesPersistenceManager.getRandom(300);
         for (Library leafLibrary : leafLibraries) {
             File leafFile = downloadJar(leafLibrary.getMavenCentralJarUri());
-            analyzeLeaf(leafLibrary, leafFile);
-            this.deleteJar(leafFile);
+            if (leafFile != null) {
+                analyzeLeaf(leafLibrary, leafFile);
+                this.deleteJar(leafFile);
+            }
         }
     }
 
     /**
      * analyzes each leafLibrary with all its dependentLibrary, defines config for OPAL analysis and calls analyzeLibraryPair
+     *
      * @param leafLibrary
      * @param leafFile
      */
     public void analyzeLeaf(Library leafLibrary, File leafFile) {
         List<Library> dependentLibraries = librariesPersistenceManager.getLibrariesByLeafCoordinates(leafLibrary.getCoordinate());
-        if(dependentLibraries.isEmpty()){
+        if (dependentLibraries.isEmpty()) {
             System.out.println("analyzeLeaf: No Library depends on leaf " + leafLibrary.getCoordinate());
             return;
         }
@@ -72,11 +77,13 @@ public class DependenceAnalysis {
         for (Library dependentLibrary : dependentLibraries) {
 //            Library dependentLibrary = dependentLibraries.get(0);
             File dependentFile = downloadJar(dependentLibrary.getMavenCentralJarUri());
-            libraryPairManager.resetProject();
-            libraryPairManager.initProject(leafFile, dependentFile, overrideConfig, leafLibrary.getCoordinate(), dependentLibrary.getCoordinate());
+            if (dependentFile != null) {
+                libraryPairManager.resetProject();
+                libraryPairManager.initProject(leafFile, dependentFile, overrideConfig, leafLibrary.getCoordinate(), dependentLibrary.getCoordinate());
 //        LibraryPairManager_old lM = new LibraryPairManager_old(leafFile, dependentFile, overrideConfig);
 //        lM.analyzeLibraryPair();
-            this.deleteJar(dependentFile);
+                this.deleteJar(dependentFile);
+            }
         }
     }
 
