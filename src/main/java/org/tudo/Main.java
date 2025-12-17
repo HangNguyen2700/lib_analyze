@@ -110,23 +110,8 @@ public class Main {
     private static void runOPALAnalysis(String[] args) {
 //        printHeapStats();
         DependenceAnalysis dependenceAnalysis = new DependenceAnalysis();
-        Logger logger = Logger.getLogger("Report");
-        FileHandler fh;
-
-        try {
-            fh = new FileHandler("Report.log");
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fh.setFormatter(formatter);
-
-            dependenceAnalysis.analyzeRandomLeafs();
-
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        dependenceAnalysis.analyzeRandomLeafs();
+        System.out.println("OPAL analysis completed successfully");
     }
 
 

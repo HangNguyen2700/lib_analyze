@@ -11,6 +11,8 @@ import org.opalj.br.analyses.Project$;
 import org.opalj.log.GlobalLogContext$;
 import org.opalj.tac.cg.CallGraph;
 import org.opalj.tac.cg.FTACallGraphKey$;
+import org.tudo.LibraryPair;
+import org.tudo.persistenceManagers.LibraryPairsPersistenceManager;
 import scala.Tuple2;
 import scala.collection.Iterable;
 import scala.jdk.javaapi.CollectionConverters;
@@ -35,10 +37,15 @@ public class LibraryPairManager {
     private List<DeclaredMethod> methodsInLeaf;
     private List<DeclaredMethod> methodsInDependent;
     private List<DeclaredMethod> unusedMethodsInLeafByDependence;
+    private boolean isLeafBloatedInDependence;
 
     private MethodsManager methodsManager;
+    private LibraryPairsPersistenceManager libraryPairsPersistenceManager;
+    private LibraryPair libraryPair;
 
     public LibraryPairManager () {
+        this.methodsManager = new MethodsManager();
+        this.libraryPairsPersistenceManager = new  LibraryPairsPersistenceManager();
     }
 
     public void resetProject(){
@@ -53,14 +60,17 @@ public class LibraryPairManager {
         this.methodsInLeaf = null;
         this.methodsInDependent = null;
         this.unusedMethodsInLeafByDependence = null;
+        this.isLeafBloatedInDependence = false;
 
-        this.methodsManager = new MethodsManager();
+        this.libraryPair = null;
+
+        System.gc();
     }
 
     /**
      * inits project for OPAL static analysis of each leaf- & dependent-library.
      */
-    public void initProject(File leafFile, File dependentFile, Config config) {
+    public void initProject(File leafFile, File dependentFile, Config config, String leafCoordinates, String dependentCoordinates) {
         this.leafFile = leafFile;
         this.dependentFile = dependentFile;
         this.project = Project$.MODULE$.apply(
@@ -86,39 +96,13 @@ public class LibraryPairManager {
         this.unusedMethodsInLeafByDependence = methodsManager.getUnusedMethodsInFileByOtherFile(methodsInLeaf, objTypesInDependence, callGraph);
         System.out.println("-- Total unused in leaf by dependent library: " + unusedMethodsInLeafByDependence.size());
         if(methodsInLeaf.size() == unusedMethodsInLeafByDependence.size()) {
+            isLeafBloatedInDependence = true;
             System.out.println("--> " + leafFile.getName() + " is bloated in " + dependentFile.getName());
         }
-    }
 
-    /**
-     * Static analysis using OPAL for each leaf- & dependent-library.
-     */
-    @Deprecated
-    public void analyzeLibraryPair() {
-        CallGraph callGraph = project.get(FTACallGraphKey$.MODULE$);
-        DeclaredMethods prjDecMethods = project.get(DeclaredMethodsKey$.MODULE$);
-
-        System.out.println("leaf fileName: " + leafFile.getName());
-        System.out.println("dependentFile: " + dependentFile.getName());
-
-        List<ObjectType> objTypesInLeaf = this.sortObjTypesByFile(project.classFilesWithSources(), leafFile);
-        List<ObjectType> objTypesInDependence = this.sortObjTypesByFile(project.classFilesWithSources(), dependentFile);
-
-        List<DeclaredMethod> methodsInLeaf = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInLeaf, project);
-        System.out.println("-- Total leaf methods with body : " + methodsInLeaf.size());
-        List<DeclaredMethod> methodsInDependent = methodsManager.sortMethodsByFile(prjDecMethods, objTypesInDependence, project);
-        System.out.println("-- Total dependent methods with body : " + methodsInDependent.size());
-//        System.out.println("###### List all methods in leaf: ");
-//        for (DeclaredMethod method : methodsInLeaf) {
-//            System.out.println(method.id() + method.name());
-//        }
-//        List<DeclaredMethod> unusedMethodsInLeaf = methodsManager.getUnusedMethodsInFile(methodsInLeaf, callGraph);
-//        System.out.println("###### Count unused in A: " + unusedMethodsInLeaf.size());
-        List<DeclaredMethod> unusedMethodsInLeafByDependence = methodsManager.getUnusedMethodsInFileByOtherFile(methodsInLeaf, objTypesInDependence, callGraph);
-        System.out.println("-- Total unused in leaf by dependent library: " + unusedMethodsInLeafByDependence.size());
-        if(methodsInLeaf.size() == unusedMethodsInLeafByDependence.size()) {
-            System.out.println("--> " + leafFile.getName() + " is bloated in " + dependentFile.getName());
-        }
+        //Store analysis result into DB
+        this.libraryPair = new LibraryPair(leafCoordinates, dependentCoordinates, methodsInLeaf.size(), methodsInDependent.size(), callGraph.numEdges(), unusedMethodsInLeafByDependence.size(), isLeafBloatedInDependence);
+        libraryPairsPersistenceManager.save(libraryPair);
     }
 
     /**

@@ -73,7 +73,7 @@ public class DependenceAnalysis {
 //            Library dependentLibrary = dependentLibraries.get(0);
             File dependentFile = downloadJar(dependentLibrary.getMavenCentralJarUri());
             libraryPairManager.resetProject();
-            libraryPairManager.initProject(leafFile, dependentFile, overrideConfig);
+            libraryPairManager.initProject(leafFile, dependentFile, overrideConfig, leafLibrary.getCoordinate(), dependentLibrary.getCoordinate());
 //        LibraryPairManager_old lM = new LibraryPairManager_old(leafFile, dependentFile, overrideConfig);
 //        lM.analyzeLibraryPair();
             this.deleteJar(dependentFile);
