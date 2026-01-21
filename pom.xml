@@ -182,5 +182,10 @@
             <artifactId>commons-io</artifactId>
             <version>2.20.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
     </dependencies>
 </project>

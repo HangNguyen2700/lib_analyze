@@ -70,6 +70,12 @@ public class Main {
      * Result: runtime c.a 13h 3.11.2025
      * - 302336 libraries (jar-package)
      * - 64566 leaf libraries
+     *
+     * new result:
+     * from 2026-01-17 22:02:09 to 2026-01-19 12:24:45
+     * and from 2026-01-19 12:26:02 to 2026-01-19 12:43:30
+     * - 1045126 libraries (jar-package)
+     * - 28868 leaf libraries
      * */
     private static void runMarinLibrariesAnalysis() {
         LibrariesPersistenceManager manager = new LibrariesPersistenceManager();

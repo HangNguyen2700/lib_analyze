@@ -135,9 +135,9 @@ public class LibrariesPersistenceManager {
         }
     }
 
-    public Set<Library> getRandom(int n) {
+    public Set<Library> getRandomLeaf(int n) {
         if (n <= 0) {
-            System.out.println("getRandom: Number of libraries to be fetched must be a positive integer");
+            System.out.println("getRandomLeaf: Number of libraries to be fetched must be a positive integer");
             return Collections.emptySet();
         }
 
@@ -146,7 +146,7 @@ public class LibrariesPersistenceManager {
             try {
                 List<Library> result = session
                         .createQuery(
-                                "select l from Library l order by function('random')",
+                                "select l from Library l where l.isLeaf = true order by function('random')",
                                 Library.class)
                         .setMaxResults(n)
                         .setReadOnly(true) // hint: read-only for performance
@@ -154,7 +154,7 @@ public class LibrariesPersistenceManager {
                 transaction.commit();
                 return new HashSet<>(result);
             } catch (Exception e) {
-                System.err.println("getRandom: Error getting random libraries ");
+                System.err.println("getRandomLeaf: Error getting random leaf libraries ");
                 e.printStackTrace();
                 safeRollback(transaction);
             }

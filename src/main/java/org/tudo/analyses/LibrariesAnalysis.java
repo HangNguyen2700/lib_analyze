@@ -43,9 +43,10 @@ public class LibrariesAnalysis extends MavenCentralAnalysis {
         List<Dependency> dependencies = pomInfo.getResolvedDependencies();
         String actualDependencyCoordinates = "";
         for (Dependency dependency : dependencies) {
-            if (PomUtils.isActualDependency(dependency)) {
-                actualDependencyCoordinates += (dependency.getIdent().getCoordinates() + ", ");
-            }
+//            if (PomUtils.isActualDependency(dependency)) {
+//                actualDependencyCoordinates += (dependency.getIdent().getCoordinates() + ", ");
+//            }
+            actualDependencyCoordinates += (dependency.getIdent().getCoordinates() + ", ");
         }
         System.out.println("actualDependencyCoordinates: " + actualDependencyCoordinates);
         System.out.println("is leaf? " + actualDependencyCoordinates.isEmpty());

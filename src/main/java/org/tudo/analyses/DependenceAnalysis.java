@@ -4,9 +4,11 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.commons.io.FileUtils;
 import org.tudo.Library;
+import org.tudo.LibraryPair;
 import org.tudo.managers.LibraryPairManager;
 import org.tudo.managers.LibraryPairManager_old;
 import org.tudo.persistenceManagers.LibrariesPersistenceManager;
+import org.tudo.persistenceManagers.LibraryPairsPersistenceManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,9 +22,11 @@ import java.util.Set;
  */
 public class DependenceAnalysis {
     private LibrariesPersistenceManager librariesPersistenceManager;
+    private LibraryPairsPersistenceManager libraryPairsPersistenceManager;
 
     public DependenceAnalysis() {
         this.librariesPersistenceManager = new LibrariesPersistenceManager();
+        this.libraryPairsPersistenceManager = new LibraryPairsPersistenceManager();
     }
 
     public void analyzeRandomLeaf() {
@@ -41,7 +45,7 @@ public class DependenceAnalysis {
     }
 
     public void analyzeRandomLeafs() {
-        Set<Library> leafLibraries = librariesPersistenceManager.getRandom(300);
+        Set<Library> leafLibraries = librariesPersistenceManager.getRandomLeaf(380);
         for (Library leafLibrary : leafLibraries) {
             File leafFile = downloadJar(leafLibrary.getMavenCentralJarUri());
             if (leafFile != null) {
@@ -61,6 +65,8 @@ public class DependenceAnalysis {
         List<Library> dependentLibraries = librariesPersistenceManager.getLibrariesByLeafCoordinates(leafLibrary.getCoordinate());
         if (dependentLibraries.isEmpty()) {
             System.out.println("analyzeLeaf: No Library depends on leaf " + leafLibrary.getCoordinate());
+            //Store analysis result into DB
+            libraryPairsPersistenceManager.save(new LibraryPair(leafLibrary.getCoordinate(), "", 0, 0, 0, 0, true));
             return;
         }
 
